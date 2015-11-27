@@ -154,9 +154,9 @@ void draw(){
     }
     
     if(enemyC[4]>width){
-    enemyY1 = floor(random(0,height-enemyHeight*2));}
+    enemyY1 = floor(random(0,height-enemyHeight));}
     enemyC[1] += enemySpeed;
-    enemyC[1] %= width*3+enemyWidth*10+enemySpacing*6;
+    enemyC[1] %= width*3+enemyWidth*10+enemySpacing*6+100;
     
  
     
@@ -264,7 +264,14 @@ void draw(){
     image(end1,0,0);
     if (mouseX >= 204 && mouseX < 434 && mouseY >= 306 && mouseY <= 350){
       if(mousePressed){
-      gameState = GAME_RUN; fighterX = 580 ; fighterY = 240; hpLong = 50;}
+        gameState = GAME_RUN; fighterX = 580 ; fighterY = 240; hpLong = 50;
+        enemyC[4]=0;
+        enemyB[4]=-(width+enemyWidth*5+enemySpacing*4+250);
+        enemyA[2]=-(width*2+enemyWidth*5+enemySpacing*4+600);
+        enemyY1 = floor(random(0,height-enemyHeight));
+        enemyY2 = floor(random(0,height-enemyHeight*5));
+        enemyY3 = floor(random(enemyHeight*2,height-enemyHeight*5));
+      }
     }
     else{image(end2,0,0);}
     break;
