@@ -1,6 +1,7 @@
 PImage bg1, bg2, end1, end2, enemy1, fighter, hp, start1, start2, treasure;
 final int GAME_START=1, GAME_RUN=2, GAME_OVER=3;  
-int gameState;
+final int LEVEL_C=4, LEVEL_B=5, LEVEL_A=6;
+int gameState, enemyMode;
 
 //gamebackground
 int bg1X, bg2X, bg3X;
@@ -19,14 +20,12 @@ boolean rightPressed = false;
 int hpLong;
 
 //enemy
-int [] enemyC = new int [5];
-int [] enemyB = new int [5];
-int [] enemyA = new int [8]; 
-int enemyY1, enemyY2, enemyY3; 
-int enemyWidth, enemyHeight;
+int [] enemyX = new int [8];
+int [] enemyY = new int [8];
+int enemyWidth, enemyHeight, restartX, restartY;
 int enemySpeed;
 int enemySpacing;
-boolean showing = true;
+boolean [] crashing = new boolean [8];
 
 
 //treasure
@@ -39,6 +38,7 @@ void setup(){
   colorMode(RGB);
   
   gameState = GAME_START;
+  enemyMode = LEVEL_C;
   
   //image
   bg1 = loadImage("img/bg1.png");
@@ -64,15 +64,13 @@ void setup(){
   hpLong = 50;
   
   //enemy
-  enemyB[1]=-(width+enemyWidth*5+enemySpacing*4+250);
-  enemyA[0]=-(width*2+enemyWidth*5+enemySpacing*4+600);
-  enemyY1 = floor(random(0,height-enemyHeight));
-  enemyY2 = floor(random(0,height-enemyHeight*5));
-  enemyY3 = floor(random(enemyHeight*2,height-enemyHeight*5));
+  enemyY[0] = floor(random(0,height-enemyHeight));
   enemySpeed = 5;
   enemyWidth = 61;
   enemyHeight = 61;
   enemySpacing = 2;
+  restartX = -enemyWidth;
+  restartY = floor(random(0,height-enemyHeight));
 
   
   //treasure
@@ -97,6 +95,7 @@ void draw(){
     
     case GAME_RUN: //run
     //background
+
     bg1X =(bg1X+1)%1280;
     image(bg1,bg1X,0);
     bg2X =(bg1X-640+1)%1280;
@@ -141,45 +140,112 @@ void draw(){
     
     //enemy
     
+    //crash
     
-    //level C
-    for(int i=0; i<enemyC.length; i++){
-      int x = enemyC[1]-i*(enemyWidth+enemySpacing);
-      image(enemy1,x,enemyY1);
-      if(fighterX >= x && fighterX <= x+enemyWidth && fighterY >= enemyY1 && fighterY <= enemyY1+enemyHeight){
-        hpLong -= 20;showing=false;}
-      else if(fighterX+51 >= x && fighterX+51 <= x+enemyWidth && fighterY+51 >= enemyY1 && fighterY+51 <= enemyY1+enemyHeight){
-        hpLong -= 20;showing=false;}
+    for(int i=0; i<8; i++){
+      if(fighterX+enemyWidth>= enemyX[i] && fighterX <= enemyX[i]+enemyWidth && fighterY+enemyHeight >= enemyY[i] && fighterY <= enemyY[i]+enemyHeight){
+        crashing[i]=true;hpLong -= 20;
+      }else{
+          crashing[i]=false;
+        }
+    }
         
+    //die 
+    if(hpLong <= 10){
+    gameState = GAME_OVER;}
+    
+    //enemy moving
+    restartX+=enemySpeed;
+    switch(enemyMode){  
+    case 4:
+    //level C
+    
+    for(int i=0; i<5; i++){
+      if(crashing[i]==false){
+        enemyX[i] = restartX - i*(enemyWidth+enemySpeed);
+        enemyY[i] = restartY;
+        image(enemy1,enemyX[i],enemyY[i]);
+        }
     }
     
-    if(enemyC[4]>width){
-    enemyY1 = floor(random(0,height-enemyHeight));}
-    enemyC[1] += enemySpeed;
-    enemyC[1] %= width*3+enemyWidth*10+enemySpacing*6+100;
+    if(restartX>width+5*(enemyWidth+enemySpacing)){
+      enemyMode =5;
+      restartX = -5*(enemyWidth+enemySpacing);
+      restartY = floor(random(0,height-5*enemyHeight/2));
+      for(int i =0; i<8; i++){
+      crashing[i]= false;} 
+    }
+   
     
+    break;
+   
+
  
-    
     //level B
-    for(int i=0; i <enemyB.length; i++){
-      int x = enemyB[1]-i*(enemyWidth+enemySpacing);
-      int y = enemyY2+i*(enemyHeight);
-      image(enemy1,x,y);
-       if(fighterX >= x && fighterX <= x+enemyWidth && fighterY >= y && fighterY <= y+enemyHeight){
-        hpLong -= 20;}
-      else if(fighterX+51 >= x && fighterX+51 <= x+enemyWidth && fighterY+51 >= y && fighterY+51 <= y+enemyHeight){
-        hpLong -= 20;} 
+    case 5:
+
+    for(int i=0; i <5; i++){
+      if(crashing[i]==false){
+        enemyX[i] = restartX-i*(enemyWidth+enemySpacing);
+        enemyY[i] = restartY+i*enemyHeight/2;
+        image(enemy1,enemyX[i],enemyY[i]);
+        }
+      }
+      
+    if(restartX>width+5*(enemyWidth+enemySpacing)){
+      enemyMode =6;
+      restartX = -5*(enemyWidth+enemySpacing);
+      restartY = floor(random(0,height-4*enemyHeight));
+      for(int i =0; i<8; i++){
+      crashing[i]= false;} 
     }
     
-    if(enemyB[4]>width){
-    enemyY2 = floor(random(0,height-enemyHeight*5));}
-    enemyB[1] += enemySpeed;
-    enemyB[1] %= width*3+(enemyWidth*10+enemySpacing*6);
     
- 
+    break;
+    
+    case 6:
+    
+    for(int i=0; i<8; i++){
+      if(crashing[i]==false){
+        if(i<3){
+          enemyX[i]=restartX-i*(enemyWidth+enemySpacing);
+          enemyY[i]=restartY-i*enemyWidth/2;
+          image(enemy1,enemyX[i],enemyY[i]);
+        }else if(i>=3&&i<5){
+          enemyX[i]=restartX-(i-2)*(enemyWidth+enemySpacing);
+          enemyY[i]=restartY+(i-2)*(enemyWidth/2);
+          image(enemy1,enemyX[i],enemyY[i]);
+        }else if(i>=5&&i<7){
+          enemyX[i]=restartX-2*(enemyWidth+enemySpacing)-(i-4)*(enemyWidth+enemySpacing);
+          enemyY[i]=restartY-2*(enemyWidth/2)+(i-4)*(enemyWidth/2);
+          image(enemy1,enemyX[i],enemyY[i]);
+        }else {
+          enemyX[i]=restartX-(i-4)*(enemyWidth+enemySpacing);
+          enemyY[i]=restartY+(i-6)*(enemyWidth/2);
+          image(enemy1,enemyX[i],enemyY[i]);
+        }
+        
+          
+        }
+      }
+      
+    if(restartX>width+5*(enemyWidth+enemySpacing)){
+      enemyMode =4;
+      restartX = -5*(enemyWidth+enemySpacing);
+      restartY = floor(random(0,height-enemyHeight));
+      for(int i =0; i<8; i++){
+      crashing[i]= false;} 
+    } 
+    
+    
+    
+    }
+    
+    
+    
    
    //level A
-   int Xmoving = enemyWidth*2+enemySpacing*2;
+   /*int Xmoving = enemyWidth*2+enemySpacing*2;
    int Ymoving = -enemyHeight*2;
    
    for(int i=0; i<3; i++){
@@ -226,7 +292,7 @@ void draw(){
     enemyY3 = floor(random(enemyHeight*2,height-enemyHeight*5));}
     enemyA[0] += enemySpeed;
     enemyA[0] %= width*3+(enemyWidth*10+enemySpacing*6);
-    
+    */
   
   
    
@@ -254,9 +320,8 @@ void draw(){
     else if(fighterX >= treasureX && fighterX <= treasureX+41 && fighterY+51 >= treasureY && fighterY+51 <= treasureY+41){
     treasureX = floor(random(0,640-41)); treasureY = floor(random(0,480-41));}
     
-    //die
-    if(hpLong <= 10){
-    gameState = GAME_OVER;}
+    
+    
     
     break;
     
@@ -265,12 +330,7 @@ void draw(){
     if (mouseX >= 204 && mouseX < 434 && mouseY >= 306 && mouseY <= 350){
       if(mousePressed){
         gameState = GAME_RUN; fighterX = 580 ; fighterY = 240; hpLong = 50;
-        enemyC[4]=0;
-        enemyB[4]=-(width+enemyWidth*5+enemySpacing*4+250);
-        enemyA[2]=-(width*2+enemyWidth*5+enemySpacing*4+600);
-        enemyY1 = floor(random(0,height-enemyHeight));
-        enemyY2 = floor(random(0,height-enemyHeight*5));
-        enemyY3 = floor(random(enemyHeight*2,height-enemyHeight*5));
+        enemyMode = 4;
       }
     }
     else{image(end2,0,0);}
